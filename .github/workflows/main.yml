@@ -1,0 +1,42 @@
+name: Construir JXZ Panel APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'JXZ_PANEL_FLOTANTE_ANDROID.zip'
+      - '.github/workflows/main.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Instalar herramientas
+        run: sudo apt-get update && sudo apt-get install -y unzip
+
+      - name: Extraer proyecto
+        run: |
+          unzip JXZ_PANEL_FLOTANTE_ANDROID.zip -d proyecto
+          find proyecto -name gradlew -type f
+
+      - name: Compilar APK
+        run: |
+          cd proyecto/JXZ_PANEL_FLOTANTE
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Guardar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: JXZ-PANEL-APK
+          path: proyecto/JXZ_PANEL_FLOTANTE/app/build/outputs/apk/debug/*.apk
